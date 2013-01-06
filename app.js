@@ -6,10 +6,7 @@ atom.dom(function () {
 	new Circles.Controller();
 });
 
-
-/** @class Pong.Controller */
 atom.declare( 'Circles.Controller', {
-
 	initialize: function () {
 		this.size  = new Size(800, 500);
 		this.app   = new App({ size: this.size });
@@ -43,16 +40,52 @@ atom.declare( 'Circles.Controller', {
 	}
 });
 
-atom.declare('Circles.Circle', App.Element, {
+function randomf(min, max)
+{
+	if (max > min)
+	{
+		return Math.random() * (max - min) + min;
+	}
+	else
+	{
+		throw "Maximum value should be less than minimum."
+	}
+}
 
-	getRandomImpulse: function () {
-		x = Number.random(0, 350) * (Math.random() > 0.5 ? 1 : -1);
-		y = Math.sqrt(350*350 - x*x) * (Math.random() > 0.5 ? 1 : -1);
-		return new Point ( x, y );
+function randomColour()
+{
+	return '#'+(Math.random()*0xFFFFFF<<0).toString(16);
+}
+
+atom.declare('Circles.Circle', App.Element,
+{
+	maxSpeed:	0.2,
+	colour: 	"#000000",
+	
+	get canvasSize () { return this.settings.get('size'); },
+	
+	getRandomImpulse: function ()
+	{
+		x = randomf(-this.maxSpeed, this.maxSpeed);
+		y = Math.sqrt(this.maxSpeed * this.maxSpeed - x*x) * (Math.random() > 0.5 ? 1 : -1);
+		return new Point(x, y);
 	},
 	
-	configure: function()	{
+	moveX: function(time)
+	{
+		return this.impulse.x * time;
+	},
+	
+	moveY: function(time)
+	{
+		return this.impulse.y * time;
+	},
+	
+	configure: function()
+	{
 		this.impulse = this.getRandomImpulse();
+		
+		this.colour = randomColour();
 		
 		this.shape = new Circle(
 			Number.random(10, this.settings.get('size').x - 10),
@@ -61,34 +94,35 @@ atom.declare('Circles.Circle', App.Element, {
 		);
 	},
 	
-	get canvasSize () { return this.settings.get('size'); },
-	
-	moveSpeed: 10000,
-	speed: 10,
-	
-	onUpdate: function (time) {
-		s = this.shape;
+	onUpdate: function (t)
+	{
+		this.shape.center.move([this.moveX(t), this.moveY(t)]);
 		
-		s.center.move(
-			[this.impulse.x * time / this.moveSpeed,
-			 this.impulse.y * time / this.moveSpeed]
-		);
+		this.collideBounds(t);
+		
+		this.redraw();
+    },
+	
+	collideBounds: function(t)
+	{
+		s = this.shape;
 		
 		if (s.center.x < s.radius || s.center.x + s.radius > this.canvasSize.x)
 		{
 			this.impulse.x *= -1;
+			s.center.x += this.moveX(t);
 		}
 		
 		if (s.center.y < s.radius || s.center.y + s.radius > this.canvasSize.y)
 		{
 			this.impulse.y *= -1;
+			s.center.y += this.moveY(t);
 		}
-		
-		this.redraw();
-    },
+	},
 	
-	renderTo: function (ctx, resources) {
-        ctx.fill( this.shape, 'blue' );
+	renderTo: function (ctx, resources)
+	{
+        ctx.fill( this.shape, this.colour );
     }
 });
 

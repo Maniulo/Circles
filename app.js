@@ -7,6 +7,8 @@ atom.dom(function () {
 });
 
 atom.declare( 'Circles.Controller', {
+	player: undefined,
+	
 	initialize: function () {
 		this.size  = new Size(800, 500);
 		this.app   = new App({ size: this.size });
@@ -22,20 +24,36 @@ atom.declare( 'Circles.Controller', {
 		
 		mouseHandler.subscribe( this.field );
 		
-		this.field.events.add( 'click', function(e) {
-			c = new Circles.Player( this.layer, {
-				controller: this,
+		this.field.events.add( 'click', function(e)
+		{
+			this.controller.player = new Circles.Player( this.layer, {
+				controller: this.controller,
 				x: e.x,
 				y: e.y
 			});
 		});
 		
+		this.circles = new Array();
 		for (var i = 0; i < 100; i++)
 		{ 
-			a = new Circles.Circle( this.layer, {
-				controller: this,
-				size: this.size 
-			});
+			this.circles[i] = new Circles.Circle( this.layer, {
+							controller: this,
+							size: this.size 
+						});
+		}
+	},
+	
+	checkCollision: function(player)
+	{
+		if (player != undefined)
+		{
+			for (var i = 0; i < 100; i++)
+			{ 
+				if (this.circles[i].shape.intersect(this.player.shape))
+				{
+					this.circles[i].state = "grow";
+				}
+			}
 		}
 	}
 });
@@ -59,8 +77,15 @@ function randomColour()
 
 atom.declare('Circles.Circle', App.Element,
 {
-	maxSpeed:	0.2,
-	colour: 	"#000000",
+	maxSpeed:     0.2,
+	growSpeed:    5,
+	grownTime:    0,
+	grownTimeMax: 5000,
+	dwindleSpeed: 20,
+	growMax:      50,
+	radius:       10,
+	colour:       "#000000",
+	state:        "move",
 	
 	get canvasSize () { return this.settings.get('size'); },
 	
@@ -92,15 +117,58 @@ atom.declare('Circles.Circle', App.Element,
 			Number.random(10, this.settings.get('size').y - 10),
 			10
 		);
+		
+		this.state = "move";
+	},
+		
+	grow: function(t)
+	{
+		if (this.shape.radius >= this.growMax)
+		{
+			this.shape.radius = this.growMax;
+			this.grownTime += t;
+			
+			if (this.grownTime > this.grownTimeMax)
+			{
+				this.state = "dwindle";
+			}
+		}
+		else
+		{
+			this.shape.radius += this.growSpeed / t;
+		}
+		this.redraw();
+	},
+	
+	dwindle: function(t)
+	{
+		if (this.shape.radius > 0)
+		{
+			this.shape.radius -= this.dwindleSpeed / t;
+			this.redraw();
+		}
+		else
+		{
+			this.destroy();
+		}
 	},
 	
 	onUpdate: function (t)
 	{
-		this.shape.center.move([this.moveX(t), this.moveY(t)]);
-		
-		this.collideBounds(t);
-		
-		this.redraw();
+		switch (this.state)
+		{
+			case "move":
+				this.shape.center.move([this.moveX(t), this.moveY(t)]);
+				this.collideBounds(t);
+				this.redraw();
+				break;
+			case "grow":
+				this.grow(t);
+				break;
+			case "dwindle":
+				this.dwindle(t);
+				break;
+		}
     },
 	
 	collideBounds: function(t)
@@ -126,9 +194,13 @@ atom.declare('Circles.Circle', App.Element,
     }
 });
 
-atom.declare('Circles.Player', App.Element, {
-
-	configure: function()	{
+atom.declare('Circles.Player', App.Element,
+{
+	speed: 10,
+	
+	configure: function()
+	{
+		this.controller = this.settings.get('controller');
 		x = this.settings.get('x');
 		y = this.settings.get('y');
 		
@@ -139,11 +211,11 @@ atom.declare('Circles.Player', App.Element, {
 		);
 	},
 	
-	speed: 10,
-	
-	onUpdate: function (time) {
-		// вращаемся со скоростью 90 градусов в секунду
-		this.shape.radius -= time / this.speed; //( (90).degree() * time / 1000 );
+	onUpdate: function (time)
+	{
+		this.controller.checkCollision(this);
+		
+		this.shape.radius -= time / this.speed;
 		
 		if (this.shape.radius <= 0)
 		{
@@ -160,9 +232,10 @@ atom.declare('Circles.Player', App.Element, {
     }
 });
 
-atom.declare('Circles.Field', App.Element, {
-
+atom.declare('Circles.Field', App.Element,
+{
 	configure: function()	{
+		this.controller = this.settings.get('controller');
 		this.shape = new Rectangle(
 			0,
 			0,

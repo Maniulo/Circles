@@ -15,21 +15,23 @@ atom.declare( 'Circles.Controller', {
 		
 		this.field = new Circles.Field( this.bgLayer, {
 				controller: this,
-				size: this.size
+				size: this.size,
+				hidden: true
 		});
 		
 		mouseHandler.subscribe( this.field );
 		
 		this.field.events.add( 'click', function(e)
 		{
+			console.log(e);
 			c = new Circles.Circle( this.layer, {
 				controller: this.controller,
 				fieldSize: this.controller.size,
-				x: e.x,
-				y: e.y
+				colour: "#FF7100",
+				x: e.clientX,
+				y: e.clientY,
+				state: "grow"
 			});
-			
-			c.state = "grow";
 		});
 		
 		this.circles = new Array();
@@ -37,13 +39,31 @@ atom.declare( 'Circles.Controller', {
 		{ 
 			this.circles[i] = new Circles.Circle( this.circlesLayer, {
 							controller: this,
-							fieldSize: this.size 
+							fieldSize: this.size,
+							state: "move"
 						});
 						
 			this.circles[i].zIndex = i;
 		}
 		
-		vk();
+		var context = new LibCanvas.Context2D(canvas);
+		
+		
+		this.fpsMeter();
+		//vk();
+	},
+	
+	fpsMeter: function () {
+		var fps = atom.trace(), time = [], last = Date.now();
+
+		atom.frame.add(function () {
+			if (time.length > 5) time.shift();
+
+			time.push( Date.now() - last );
+			last = Date.now();
+
+			fps.value = Math.ceil(1000 / time.average()) + " FPS";
+		});
 	},
 	
 	vk: function()
@@ -74,17 +94,17 @@ atom.declare( 'Circles.Controller', {
 		});
 	},
 	
-	removePlayer: function(player)
+	removeCircle: function(c)
 	{
-		player.destroy();
+		c.destroy();
 	},
 	
-	checkCollision: function(player)
+	checkCollision: function(expanded)
 	{
 		for (var i = 0; i < this.circles.length; i++)
 		{
 			c = this.circles[i];
-			if (c.shape.intersect(player.shape))
+			if (c.shape.intersect(expanded.shape))
 			{
 				c.state = "grow";
 				this.circles.splice(i,1);

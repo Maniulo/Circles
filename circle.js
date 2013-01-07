@@ -1,12 +1,12 @@
 atom.declare('Circles.Circle', App.Element,
 {
-	maxSpeed:     0.1,
+	radius:       5,
+	speed:        0.1,
 	growSpeed:    30,
+	growMax:      50,
 	grownTime:    0,
 	grownTimeMax: 5000,
 	dwindleSpeed: 20,
-	growMax:      50,
-	radius:       5,
 	colour:       "#000000",
 	state:        "move",
 	
@@ -14,8 +14,8 @@ atom.declare('Circles.Circle', App.Element,
 	
 	getRandomImpulse: function ()
 	{
-		x = randomf(-this.maxSpeed, this.maxSpeed);
-		y = Math.sqrt(this.maxSpeed * this.maxSpeed - x*x) * (Math.random() > 0.5 ? 1 : -1);
+		x = randomf(-this.speed, this.speed);
+		y = Math.sqrt(this.speed * this.speed - x*x) * (Math.random() > 0.5 ? 1 : -1);
 		return new Point(x, y);
 	},
 	
@@ -29,20 +29,37 @@ atom.declare('Circles.Circle', App.Element,
 		return this.impulse.y * time;
 	},
 	
-	configure: function()
+	configure: function method ()
 	{
+		X = this.settings.get('x');
+		if (typeof X == "undefined")
+		{
+			X = Number.random(10, this.settings.get('fieldSize').x - 10);
+		}
+		
+		Y = this.settings.get('y');
+		if (typeof Y == "undefined")
+		{
+			Y = Number.random(10, this.settings.get('fieldSize').y - 10);
+		}
+		
+		
+		this.colour = this.settings.get('colour');
+		if (typeof this.colour == "undefined")
+		{
+			this.colour = randomColour();
+		}	
+		
 		this.impulse = this.getRandomImpulse();
 		this.controller = this.settings.get('controller');
-		
-		this.colour = randomColour();
-		
+			
 		this.shape = new Circle(
-			Number.random(10, this.settings.get('fieldSize').x - 10),
-			Number.random(10, this.settings.get('fieldSize').y - 10),
+			X,
+			Y,
 			this.radius
 		);
 		
-		this.state = "move";
+		this.state = this.settings.get('state');
 	},
 		
 	grow: function(t)
@@ -96,7 +113,7 @@ atom.declare('Circles.Circle', App.Element,
 				this.controller.checkCollision(this);
 				break;
 			case "destroy":
-				this.controller.removePlayer(this);
+				this.controller.removeCircle(this);
 				break;
 		}
     },

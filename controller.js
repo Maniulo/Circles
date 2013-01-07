@@ -20,14 +20,13 @@ atom.declare( 'Circles.Controller', {
 		
 		this.field.events.add( 'click', function(e)
 		{
-			this.controller.player.push(new Circles.Player( this.layer, {
+			this.controller.player = new Circles.Player( this.layer, {
 				controller: this.controller,
 				x: e.x,
 				y: e.y
-			}));
+			});
 		});
 		
-		this.player = new Array();
 		this.circles = new Array();
 		for (var i = 0; i < this.maxCircles; i++)
 		{ 
@@ -72,30 +71,18 @@ atom.declare( 'Circles.Controller', {
 	
 	removePlayer: function(player)
 	{
-		for (var j = 0; j < this.player.length; j++)
-		{
-			if (this.player[j] == player)
-			{
-				this.player.splice(j,1);
-				player.destroy();
-				break;
-			}
-		}
+		player.destroy();
 	},
 	
 	checkCollision: function(player)
 	{
-		//for (var j = 0; j < this.player.length; j++)
+		for (var i = 0; i < this.circles.length; i++)
 		{
-			for (var i = 0; i < this.circles.length; i++)
+			c = this.circles[i];
+			if (c.shape.intersect(player.shape))
 			{
-				c = this.circles[i];
-				if (c.shape.intersect(player.shape))
-				{
-					c.state = "grow";
-					this.player.push(c);
-					this.circles.splice(i,1);
-				}
+				c.state = "grow";
+				this.circles.splice(i,1);
 			}
 		}
 	}

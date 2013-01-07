@@ -1,6 +1,6 @@
 atom.declare( 'Circles.Controller', {
 	player: undefined,
-	maxCircles: 20,
+	maxCircles: 100,
 	
 	initialize: function () {
 		this.size  = new Size(607, 500);
@@ -35,6 +35,8 @@ atom.declare( 'Circles.Controller', {
 							controller: this,
 							fieldSize: this.size 
 						});
+						
+			this.circles[i].zIndex = i;
 		}
 		
 		vk();

@@ -11,6 +11,5 @@ atom.declare('Circles.Field', App.Element,
 	},
 	
 	renderTo: function (ctx, resources) {
-        ctx.fill( this.shape, '#dedede' );
     }
 });

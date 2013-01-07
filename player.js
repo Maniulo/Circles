@@ -1,37 +1,73 @@
 atom.declare('Circles.Player', App.Element,
 {
-	speed: 10,
+	growSpeed:    45,
+	grownTime:    0,
+	grownTimeMax: 5000,
+	dwindleSpeed: 20,
+	growMax:      60,
+	radius:       10,
+	colour:       "green",
+	state:        "grow",
 	
 	configure: function()
 	{
 		this.controller = this.settings.get('controller');
-		x = this.settings.get('x');
-		y = this.settings.get('y');
 		
 		this.shape = new Circle(
-			x,
-			y,
-			100
+			this.settings.get('x'),
+			this.settings.get('y'),
+			this.radius
 		);
 	},
 	
-	onUpdate: function (time)
+	grow: function(t)
 	{
-		this.controller.checkCollision(this);
-		
-		this.shape.radius -= time / this.speed;
-		
-		if (this.shape.radius <= 0)
+		if (this.shape.radius >= this.growMax)
 		{
-			this.destroy();
+			this.shape.radius = this.growMax;
+			this.grownTime += t;
+			
+			if (this.grownTime > this.grownTimeMax)
+			{
+				this.state = "dwindle";
+			}
 		}
 		else
 		{
+			this.shape.radius += this.growSpeed / t;
+		}
+		this.redraw();
+	},
+	
+	dwindle: function(t)
+	{
+		if (this.shape.radius > 0)
+		{
+			this.shape.radius -= this.dwindleSpeed / t;
 			this.redraw();
+		}
+		else
+		{
+			this.destroy();
+		}
+	},
+	
+	onUpdate: function (t)
+	{
+		switch (this.state)
+		{
+			case "grow":
+				this.grow(t);
+				this.controller.checkCollision(this);
+				break;
+			case "dwindle":
+				this.dwindle(t);
+				this.controller.checkCollision(this);
+				break;
 		}
     },
 	
 	renderTo: function (ctx, resources) {
-        ctx.fill( this.shape, 'red' );
+        ctx.fill( this.shape, this.colour );
     }
 });

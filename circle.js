@@ -1,7 +1,7 @@
 atom.declare('Circles.Circle', App.Element,
 {
-	maxSpeed:     0.2,
-	growSpeed:    5,
+	maxSpeed:     0.1,
+	growSpeed:    30,
 	grownTime:    0,
 	grownTimeMax: 5000,
 	dwindleSpeed: 20,
@@ -10,7 +10,7 @@ atom.declare('Circles.Circle', App.Element,
 	colour:       "#000000",
 	state:        "move",
 	
-	get canvasSize () { return this.settings.get('size'); },
+	get canvasSize () { return this.settings.get('fieldSize'); },
 	
 	getRandomImpulse: function ()
 	{
@@ -32,12 +32,13 @@ atom.declare('Circles.Circle', App.Element,
 	configure: function()
 	{
 		this.impulse = this.getRandomImpulse();
+		this.controller = this.settings.get('controller');
 		
 		this.colour = randomColour();
 		
 		this.shape = new Circle(
-			Number.random(10, this.settings.get('size').x - 10),
-			Number.random(10, this.settings.get('size').y - 10),
+			Number.random(10, this.settings.get('fieldSize').x - 10),
+			Number.random(10, this.settings.get('fieldSize').y - 10),
 			10
 		);
 		
@@ -87,9 +88,11 @@ atom.declare('Circles.Circle', App.Element,
 				break;
 			case "grow":
 				this.grow(t);
+				this.controller.checkCollision(this);
 				break;
 			case "dwindle":
 				this.dwindle(t);
+				this.controller.checkCollision(this);
 				break;
 		}
     },

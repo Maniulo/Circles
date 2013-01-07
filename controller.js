@@ -46,9 +46,6 @@ atom.declare( 'Circles.Controller', {
 			this.circles[i].zIndex = i;
 		}
 		
-		var context = new LibCanvas.Context2D(canvas);
-		
-		
 		this.fpsMeter();
 		//vk();
 	},

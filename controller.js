@@ -1,17 +1,17 @@
 atom.declare( 'Circles.Controller', {
 	player: undefined,
-	maxCircles: 10,
+	maxCircles: 20,
 	
 	initialize: function () {
-		this.size  = new Size(800, 500);
+		this.size  = new Size(607, 500);
 		this.app   = new App({ size: this.size });
-		this.layer = this.app.createLayer({ invoke: true, intersection: 'all', zIndex: 5 });
-		this.circlesLayer = this.app.createLayer({ invoke: true, intersection: 'auto', zIndex: 2});
+		this.layer = this.app.createLayer({ invoke: true, intersection: 'auto', zIndex: 5 });
+		this.circlesLayer = this.app.createLayer({ invoke: true, intersection: 'all', zIndex: 2});
 			
 		mouse 	     = new Mouse(this.app.container.bounds);
 		mouseHandler = new App.MouseHandler({ app: this.app, mouse: mouse });
 		
-		this.field = new Circles.Field( this.circlesLayer, {
+		this.field = new Circles.Field( this.layer, {
 				controller: this,
 				size: this.size
 		});
@@ -36,6 +36,36 @@ atom.declare( 'Circles.Controller', {
 							fieldSize: this.size 
 						});
 		}
+		
+		vk();
+	},
+	
+	vk: function()
+	{
+		VK.init(function() {
+			var parts=document.location.search.substr(1).split("&");
+			
+			var flashVars = {}, curr;
+			for (i = 0; i < parts.length; i++) {
+				curr = parts[i].split('=');
+				flashVars[curr[0]] = curr[1];
+			}
+		   
+			var viewer_id = flashVars['viewer_id'];
+			console.log(viewer_id);
+			
+			VK.api(
+				"users.get",
+				{
+					uids: viewer_id, fields: "first_name, last_name"
+				},
+				function(data)
+				{
+					console.log(data);
+					console.log( data.response[0].first_name + ' ' + data.response[0].last_name);
+				}
+			)
+		});
 	},
 	
 	removePlayer: function(player)

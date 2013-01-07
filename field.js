@@ -8,8 +8,5 @@ atom.declare('Circles.Field', App.Element,
 			this.settings.get('size').x,
 			this.settings.get('size').y
 		);
-	},
-	
-	renderTo: function (ctx, resources) {
-    }
+	}
 });

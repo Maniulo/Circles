@@ -6,7 +6,7 @@ atom.declare('Circles.Circle', App.Element,
 	grownTimeMax: 5000,
 	dwindleSpeed: 20,
 	growMax:      50,
-	radius:       10,
+	radius:       5,
 	colour:       "#000000",
 	state:        "move",
 	
@@ -39,7 +39,7 @@ atom.declare('Circles.Circle', App.Element,
 		this.shape = new Circle(
 			Number.random(10, this.settings.get('fieldSize').x - 10),
 			Number.random(10, this.settings.get('fieldSize').y - 10),
-			10
+			this.radius
 		);
 		
 		this.state = "move";
@@ -66,14 +66,15 @@ atom.declare('Circles.Circle', App.Element,
 	
 	dwindle: function(t)
 	{
+		this.shape.radius -= this.dwindleSpeed / t;
 		if (this.shape.radius > 0)
 		{
-			this.shape.radius -= this.dwindleSpeed / t;
 			this.redraw();
 		}
 		else
 		{
-			this.destroy();
+			this.shape.radius = 0;
+			this.state = "destroy";
 		}
 	},
 	
@@ -94,6 +95,9 @@ atom.declare('Circles.Circle', App.Element,
 				this.dwindle(t);
 				this.controller.checkCollision(this);
 				break;
+			case "destroy":
+				this.controller.removePlayer(this);
+				break;
 		}
     },
 	
@@ -113,7 +117,7 @@ atom.declare('Circles.Circle', App.Element,
 			s.center.y += this.moveY(t);
 		}
 	},
-	
+		
 	renderTo: function (ctx, resources)
 	{
         ctx.fill( this.shape, this.colour );

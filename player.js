@@ -41,14 +41,15 @@ atom.declare('Circles.Player', App.Element,
 	
 	dwindle: function(t)
 	{
+		this.shape.radius -= this.dwindleSpeed / t;
 		if (this.shape.radius > 0)
 		{
-			this.shape.radius -= this.dwindleSpeed / t;
 			this.redraw();
 		}
 		else
 		{
-			this.destroy();
+			this.shape.radius = 0;
+			this.state = "destroy";
 		}
 	},
 	
@@ -63,6 +64,9 @@ atom.declare('Circles.Player', App.Element,
 			case "dwindle":
 				this.dwindle(t);
 				this.controller.checkCollision(this);
+				break;
+			case "destroy":
+				this.controller.removePlayer(this);
 				break;
 		}
     },

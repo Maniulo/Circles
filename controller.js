@@ -1,17 +1,19 @@
 atom.declare( 'Circles.Controller', {
-	player: undefined,
 	maxCircles: 100,
+	appWidth:   607,
+	appHeight:  500,
 	
 	initialize: function () {
-		this.size  = new Size(607, 500);
+		this.size  = new Size(this.appWidth, this.appHeight);
 		this.app   = new App({ size: this.size });
-		this.layer = this.app.createLayer({ invoke: true, intersection: 'auto', zIndex: 5 });
-		this.circlesLayer = this.app.createLayer({ invoke: true, intersection: 'all', zIndex: 2});
+		
+		this.bgLayer = this.app.createLayer({ invoke: true, intersection: 'auto', zIndex: 0 });
+		this.circlesLayer = this.app.createLayer({ invoke: true, intersection: 'all', zIndex: 1});
 			
 		mouse 	     = new Mouse(this.app.container.bounds);
 		mouseHandler = new App.MouseHandler({ app: this.app, mouse: mouse });
 		
-		this.field = new Circles.Field( this.layer, {
+		this.field = new Circles.Field( this.bgLayer, {
 				controller: this,
 				size: this.size
 		});
@@ -20,17 +22,20 @@ atom.declare( 'Circles.Controller', {
 		
 		this.field.events.add( 'click', function(e)
 		{
-			this.controller.player = new Circles.Player( this.layer, {
+			c = new Circles.Circle( this.layer, {
 				controller: this.controller,
+				fieldSize: this.controller.size,
 				x: e.x,
 				y: e.y
 			});
+			
+			c.state = "grow";
 		});
 		
 		this.circles = new Array();
 		for (var i = 0; i < this.maxCircles; i++)
 		{ 
-			this.circles[i] = new Circles.Circle( this.layer, {
+			this.circles[i] = new Circles.Circle( this.circlesLayer, {
 							controller: this,
 							fieldSize: this.size 
 						});

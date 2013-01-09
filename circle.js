@@ -10,8 +10,16 @@ atom.declare('Circles.Circle', App.Element,
 	colour:       "#000000",
 	state:        "move",
 	
-	get canvasSize () { return this.settings.get('fieldSize'); },
-	
+	get canvasSize ()
+	{
+		return this.settings.get('fieldSize');
+	},
+
+	get fieldShape ()
+	{
+		return this.controller.field.shape;
+	},
+
 	getRandomImpulse: function ()
 	{
 		var x, y;
@@ -19,15 +27,13 @@ atom.declare('Circles.Circle', App.Element,
 		y = Math.sqrt(this.speed * this.speed - x*x) * (Math.random() > 0.5 ? 1 : -1);
 		return new Point(x, y);
 	},
-	
-	moveX: function(time)
+
+	move: function (time)
 	{
-		return this.impulse.x * time;
-	},
-	
-	moveY: function(time)
-	{
-		return this.impulse.y * time;
+		return new Point(
+			this.impulse.x * time,
+			this.impulse.y * time
+		);
 	},
 	
 	configure: function method ()
@@ -37,8 +43,6 @@ atom.declare('Circles.Circle', App.Element,
 		this.colour     = this.settings.get('colour') || atom.Color.random().toString();
 		this.impulse    = this.getRandomImpulse();
 
-		console.log( this.impulse.dump(), this.speed );
-
 		this.shape = new Circle(
 			this.makeCenterPoint(),
 			this.radius
@@ -47,9 +51,9 @@ atom.declare('Circles.Circle', App.Element,
 		this.state = this.settings.get('state');
 	},
 
-	makeCenterPoint: function () {
-		return this.settings.get('point') ||
-			this.controller.field.shape.getRandomPoint(10);
+	makeCenterPoint: function ()
+	{
+		return this.settings.get('point') || this.fieldShape.getRandomPoint(10);
 	},
 		
 	grow: function(t)
@@ -90,7 +94,7 @@ atom.declare('Circles.Circle', App.Element,
 		switch (this.state)
 		{
 			case "move":
-				this.shape.center.move([this.moveX(t), this.moveY(t)]);
+				this.shape.center.move(this.move(t));
 				this.collideBounds(t);
 				this.redraw();
 				break;
@@ -110,20 +114,24 @@ atom.declare('Circles.Circle', App.Element,
 	
 	collideBounds: function(t)
 	{
-		var
-			s = this.shape;
-		
-		if (s.center.x < s.radius || s.center.x + s.radius > this.canvasSize.x)
+		this.collideBoundsAxis('x', t);
+		this.collideBoundsAxis('y', t);
+	},
+
+	collideBoundsAxis: function (axis, t)
+	{
+		if (this.isOutOfBounds(axis))
 		{
-			this.impulse.x *= -1;
-			s.center.x += this.moveX(t);
+			this.impulse[axis] *= -1;
+			this.shape.center[axis] += this.move(t)[axis];
 		}
-		
-		if (s.center.y < s.radius || s.center.y + s.radius > this.canvasSize.y)
-		{
-			this.impulse.y *= -1;
-			s.center.y += this.moveY(t);
-		}
+	},
+
+	isOutOfBounds: function (axis)
+	{
+		var s = this.shape;
+		return s.center[axis] < s.radius
+		    || s.center[axis] + s.radius > this.canvasSize[axis];
 	},
 		
 	renderTo: function (ctx, resources)

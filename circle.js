@@ -14,6 +14,7 @@ atom.declare('Circles.Circle', App.Element,
 	
 	getRandomImpulse: function ()
 	{
+		var x, y;
 		x = atom.number.random(-this.speed, this.speed);
 		y = Math.sqrt(this.speed * this.speed - x*x) * (Math.random() > 0.5 ? 1 : -1);
 		return new Point(x, y);
@@ -31,6 +32,8 @@ atom.declare('Circles.Circle', App.Element,
 	
 	configure: function method ()
 	{
+		var X, Y;
+
 		X = this.settings.get('x');
 		if (typeof X == "undefined")
 		{

@@ -4,6 +4,8 @@ atom.declare( 'Circles.Controller', {
 	appHeight:  500,
 	
 	initialize: function () {
+		var mouse, mouseHandler, c;
+
 		this.size  = new Size(this.appWidth, this.appHeight);
 		this.app   = new App({ size: this.size });
 		

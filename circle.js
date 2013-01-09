@@ -20,22 +20,6 @@ atom.declare('Circles.Circle', App.Element,
 	{
 		return this.controller.field.shape;
 	},
-
-	getRandomImpulse: function ()
-	{
-		var x, y;
-		x = Number.randomFloat(-this.speed, this.speed);
-		y = Math.sqrt(this.speed * this.speed - x*x) * (Math.random() > 0.5 ? 1 : -1);
-		return new Point(x, y);
-	},
-
-	move: function (time)
-	{
-		return new Point(
-			this.impulse.x * time,
-			this.impulse.y * time
-		);
-	},
 	
 	configure: function method ()
 	{
@@ -54,31 +38,41 @@ atom.declare('Circles.Circle', App.Element,
 		this.updateCache();
 	},
 
-	updateCache: function () {
-		var
-			cache = this.cache,
-			r = this.shape.radius,
-			s = Math.ceil(r * 2),
-			shape = new Circle(s/2, s/2, r);
+	getRandomImpulse: function ()
+	{
+		var x, y;
+		x = Number.randomFloat(-this.speed, this.speed);
+		y = Math.sqrt(this.speed * this.speed - x*x) * (Math.random() > 0.5 ? 1 : -1);
+		return new Point(x, y);
+	},
 
-		if (cache) {
-			cache.width = cache.height = s;
-		} else {
-			cache = this.cache = LibCanvas.buffer(s, s, true);
-		}
-
-		cache.ctx.fill(shape, this.colour);
-
-		// To check, what circles are drawn from cache - uncomment this line:
-		// buffer.ctx.stroke(shape, 'black');
+	move: function (time)
+	{
+		return new Point(
+			this.impulse.x * time,
+			this.impulse.y * time
+		);
 	},
 
 	makeCenterPoint: function ()
 	{
 		return this.settings.get('point') || this.fieldShape.getRandomPoint(10);
 	},
-		
-	grow: function(t)
+
+	// Update
+	onUpdate: function (t)
+	{
+		this.redraw();
+		this[this.state + 'State'](t);
+    },
+
+	moveState: function (t)
+	{
+		this.shape.center.move(this.move(t));
+		this.collideBounds(t);
+	},
+
+	growState: function (t)
 	{
 		if (this.shape.radius >= this.growMax)
 		{
@@ -90,19 +84,21 @@ atom.declare('Circles.Circle', App.Element,
 		{
 			this.shape.radius += this.growSpeed / t;
 		}
-		this.redraw();
+		this.checkCollision();
 	},
 
-	calm: function (t) {
+	calmState: function (t)
+	{
 		this.grownTime += t;
 
 		if (this.grownTime > this.grownTimeMax)
 		{
 			this.state = "dwindle";
 		}
+		this.checkCollision();
 	},
-	
-	dwindle: function(t)
+
+	dwindleState: function (t)
 	{
 		this.shape.radius -= this.dwindleSpeed / t;
 		if (this.shape.radius > 0)
@@ -114,34 +110,18 @@ atom.declare('Circles.Circle', App.Element,
 			this.shape.radius = 0;
 			this.state = "destroy";
 		}
+		this.checkCollision();
 	},
-	
-	onUpdate: function (t)
+
+	destroyState: function (t) {
+		this.controller.removeCircle(this);
+	},
+
+	// Collisions
+	checkCollision: function ()
 	{
-		switch (this.state)
-		{
-			case "move":
-				this.shape.center.move(this.move(t));
-				this.collideBounds(t);
-				this.redraw();
-				break;
-			case "grow":
-				this.grow(t);
-				this.controller.checkCollision(this);
-				break;
-			case "calm":
-				this.calm(t);
-				this.controller.checkCollision(this);
-				break;
-			case "dwindle":
-				this.dwindle(t);
-				this.controller.checkCollision(this);
-				break;
-			case "destroy":
-				this.controller.removeCircle(this);
-				break;
-		}
-    },
+		this.controller.checkCollision(this);
+	},
 	
 	collideBounds: function(t)
 	{
@@ -164,7 +144,27 @@ atom.declare('Circles.Circle', App.Element,
 		return s.center[axis] < s.radius
 		    || s.center[axis] + s.radius > this.canvasSize[axis];
 	},
-		
+
+	// View
+	updateCache: function () {
+		var
+			cache = this.cache,
+			r = this.shape.radius,
+			s = Math.ceil(r * 2),
+			shape = new Circle(s/2, s/2, r);
+
+		if (cache) {
+			cache.width = cache.height = s;
+		} else {
+			cache = this.cache = LibCanvas.buffer(s, s, true);
+		}
+
+		cache.ctx.fill(shape, this.colour);
+
+		// To check, what circles are drawn from cache - uncomment this line:
+		// cache.ctx.stroke(shape, 'black');
+	},
+
 	renderTo: function (ctx, resources)
 	{
 		if (this.state == 'move' || this.state == 'calm') {

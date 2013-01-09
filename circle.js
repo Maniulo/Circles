@@ -23,7 +23,7 @@ atom.declare('Circles.Circle', App.Element,
 	getRandomImpulse: function ()
 	{
 		var x, y;
-		x = randomf(-this.speed, this.speed);
+		x = Number.randomFloat(-this.speed, this.speed);
 		y = Math.sqrt(this.speed * this.speed - x*x) * (Math.random() > 0.5 ? 1 : -1);
 		return new Point(x, y);
 	},

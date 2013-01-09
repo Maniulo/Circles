@@ -10,7 +10,7 @@ atom.declare( 'Circles.Controller', {
 		this.app   = new App({ size: this.size });
 		
 		this.bgLayer = this.app.createLayer({ invoke: true, intersection: 'auto', zIndex: 0 });
-		this.circlesLayer = this.app.createLayer({ invoke: true, intersection: 'all', zIndex: 1});
+		this.circlesLayer = this.app.createLayer({ invoke: true, intersection: 'full', zIndex: 1});
 			
 		mouse 	     = new Mouse(this.app.container.bounds);
 		mouseHandler = new App.MouseHandler({ app: this.app, mouse: mouse });
@@ -71,6 +71,9 @@ atom.declare( 'Circles.Controller', {
 				curr = parts[i].split('=');
 				flashVars[curr[0]] = curr[1];
 			}
+
+			// try to use this here:
+			// var viewer_id = atom.uri().queryKey.viewer_id;
 		   
 			var viewer_id = flashVars['viewer_id'];
 			console.log(viewer_id);

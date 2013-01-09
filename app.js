@@ -9,7 +9,14 @@ atom.dom(
 	}
 );
 
-function randomColour()
+function randomf(min, max)
 {
-	return '#'+(Math.random()*0xFFFFFF<<0).toString(16);
+	if (max > min)
+	{
+		return Math.random() * (max - min) + min;
+	}
+	else
+	{
+		throw "Maximum value should be less than minimum."
+	}
 }

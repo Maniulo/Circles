@@ -15,7 +15,7 @@ atom.declare('Circles.Circle', App.Element,
 	getRandomImpulse: function ()
 	{
 		var x, y;
-		x = atom.number.random(-this.speed, this.speed);
+		x = randomf(-this.speed, this.speed);
 		y = Math.sqrt(this.speed * this.speed - x*x) * (Math.random() > 0.5 ? 1 : -1);
 		return new Point(x, y);
 	},
@@ -32,37 +32,24 @@ atom.declare('Circles.Circle', App.Element,
 	
 	configure: function method ()
 	{
-		var X, Y;
 
-		X = this.settings.get('x');
-		if (typeof X == "undefined")
-		{
-			X = Number.random(10, this.settings.get('fieldSize').x - 10);
-		}
-		
-		Y = this.settings.get('y');
-		if (typeof Y == "undefined")
-		{
-			Y = Number.random(10, this.settings.get('fieldSize').y - 10);
-		}
-		
-		
-		this.colour = this.settings.get('colour');
-		if (typeof this.colour == "undefined")
-		{
-			this.colour = randomColour();
-		}	
-		
-		this.impulse = this.getRandomImpulse();
 		this.controller = this.settings.get('controller');
-			
+		this.colour     = this.settings.get('colour') || atom.Color.random().toString();
+		this.impulse    = this.getRandomImpulse();
+
+		console.log( this.impulse.dump(), this.speed );
+
 		this.shape = new Circle(
-			X,
-			Y,
+			this.makeCenterPoint(),
 			this.radius
 		);
 		
 		this.state = this.settings.get('state');
+	},
+
+	makeCenterPoint: function () {
+		return this.settings.get('point') ||
+			this.controller.field.shape.getRandomPoint(10);
 	},
 		
 	grow: function(t)
@@ -123,7 +110,8 @@ atom.declare('Circles.Circle', App.Element,
 	
 	collideBounds: function(t)
 	{
-		s = this.shape;
+		var
+			s = this.shape;
 		
 		if (s.center.x < s.radius || s.center.x + s.radius > this.canvasSize.x)
 		{

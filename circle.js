@@ -9,6 +9,7 @@ atom.declare('Circles.Circle', App.Element,
 	dwindleSpeed: 20,
 	colour:       "#000000",
 	state:        "move",
+	buffer:       null,
 	
 	get canvasSize ()
 	{
@@ -49,6 +50,27 @@ atom.declare('Circles.Circle', App.Element,
 		);
 		
 		this.state = this.settings.get('state');
+
+		this.updateCache();
+	},
+
+	updateCache: function () {
+		var
+			cache = this.cache,
+			r = this.shape.radius,
+			s = Math.ceil(r * 2),
+			shape = new Circle(s/2, s/2, r);
+
+		if (cache) {
+			cache.width = cache.height = s;
+		} else {
+			cache = this.cache = LibCanvas.buffer(s, s, true);
+		}
+
+		cache.ctx.fill(shape, this.colour);
+
+		// To check, what circles are drawn from cache - uncomment this line:
+		// buffer.ctx.stroke(shape, 'black');
 	},
 
 	makeCenterPoint: function ()
@@ -60,19 +82,24 @@ atom.declare('Circles.Circle', App.Element,
 	{
 		if (this.shape.radius >= this.growMax)
 		{
+			this.state = "calm";
 			this.shape.radius = this.growMax;
-			this.grownTime += t;
-			
-			if (this.grownTime > this.grownTimeMax)
-			{
-				this.state = "dwindle";
-			}
+			this.updateCache();
 		}
 		else
 		{
 			this.shape.radius += this.growSpeed / t;
 		}
 		this.redraw();
+	},
+
+	calm: function (t) {
+		this.grownTime += t;
+
+		if (this.grownTime > this.grownTimeMax)
+		{
+			this.state = "dwindle";
+		}
 	},
 	
 	dwindle: function(t)
@@ -100,6 +127,10 @@ atom.declare('Circles.Circle', App.Element,
 				break;
 			case "grow":
 				this.grow(t);
+				this.controller.checkCollision(this);
+				break;
+			case "calm":
+				this.calm(t);
 				this.controller.checkCollision(this);
 				break;
 			case "dwindle":
@@ -136,6 +167,14 @@ atom.declare('Circles.Circle', App.Element,
 		
 	renderTo: function (ctx, resources)
 	{
-        ctx.fill( this.shape, this.colour );
+		if (this.state == 'move' || this.state == 'calm') {
+			ctx.drawImage({
+				image   : this.cache,
+				center  : this.shape.center,
+				optimize: true
+			});
+		} else {
+			ctx.fill( this.shape, this.colour );
+		}
     }
 });

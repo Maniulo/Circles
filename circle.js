@@ -18,7 +18,7 @@ atom.declare('Circles.Circle', App.Element,
 
 	get fieldShape ()
 	{
-		return this.controller.field.shape;
+		return this.controller.shape;
 	},
 	
 	configure: function method ()

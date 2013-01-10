@@ -8,23 +8,13 @@ atom.declare( 'Circles.Controller', {
 
 		this.size  = new Size(this.appWidth, this.appHeight);
 		this.app   = new App({ size: this.size });
-		
-		this.bgLayer = this.app.createLayer({ invoke: true, intersection: 'auto', zIndex: 0 });
-		this.circlesLayer = this.app.createLayer({ invoke: true, intersection: 'full', zIndex: 1});
+		this.layer = this.app.createLayer({ invoke: true, intersection: 'full' });
+		this.shape = this.layer.ctx.rectangle;
 			
-		mouse 	     = new Mouse(this.app.container.bounds);
-		mouseHandler = new App.MouseHandler({ app: this.app, mouse: mouse });
-		
-		this.field = new Circles.Field( this.bgLayer, {
-			controller: this,
-			size: this.size,
-			hidden: true
-		});
-		
-		mouseHandler.subscribe( this.field );
-		
+		mouse = new Mouse(this.app.container.bounds);
+
 		mouse.events.add( 'click', function() {
-			new Circles.Circle( this.circlesLayer, {
+			new Circles.Circle( this.layer, {
 				controller: this,
 				fieldSize: this.size,
 				colour: "#FF7100",
@@ -36,7 +26,7 @@ atom.declare( 'Circles.Controller', {
 		this.circles = new Array();
 		for (var i = 0; i < this.maxCircles; i++)
 		{ 
-			this.circles[i] = new Circles.Circle( this.circlesLayer, {
+			this.circles[i] = new Circles.Circle( this.layer, {
 				controller: this,
 				fieldSize: this.size,
 				state: "move",

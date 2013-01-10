@@ -2,11 +2,11 @@ atom.declare('Circles.Circle', App.Element,
 {
 	radius:       5,
 	speed:        0.1,
-	growSpeed:    30,
+	growSpeed:    0.03,
 	growMax:      50,
 	grownTime:    0,
 	grownTimeMax: 5000,
-	dwindleSpeed: 20,
+	dwindleSpeed: 0.02,
 	colour:       "#000000",
 	state:        "move",
 	buffer:       null,
@@ -82,7 +82,7 @@ atom.declare('Circles.Circle', App.Element,
 		}
 		else
 		{
-			this.shape.radius += this.growSpeed / t;
+			this.shape.radius += this.growSpeed * t;
 		}
 		this.checkCollision();
 	},
@@ -100,7 +100,7 @@ atom.declare('Circles.Circle', App.Element,
 
 	dwindleState: function (t)
 	{
-		this.shape.radius -= this.dwindleSpeed / t;
+		this.shape.radius -= this.dwindleSpeed * t;
 		if (this.shape.radius > 0)
 		{
 			this.redraw();

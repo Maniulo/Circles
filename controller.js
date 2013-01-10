@@ -11,8 +11,15 @@ atom.declare( 'Circles.Controller', {
 		this.shape   = this.layer.ctx.rectangle;
 			
 		this.addMouseEvents();
-
-		for (var i = 0; i < this.maxCircles; i++)
+		this.addCircles(this.maxCircles);
+		
+		this.fpsMeter();
+		//vk();
+	},
+	
+	addCircles: function(amount)
+	{
+		for (var i = 0; i < amount; i++)
 		{ 
 			this.circles[i] = new Circles.Circle( this.layer, {
 				controller: this,
@@ -21,9 +28,6 @@ atom.declare( 'Circles.Controller', {
 				zIndex: i
 			});
 		}
-		
-		this.fpsMeter();
-		//vk();
 	},
 	
 	addMouseEvents: function()

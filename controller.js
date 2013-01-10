@@ -4,14 +4,13 @@ atom.declare( 'Circles.Controller', {
 	appHeight:  500,
 	
 	initialize: function () {
-		var mouse, mouseHandler;
-
-		this.size  = new Size(this.appWidth, this.appHeight);
-		this.app   = new App({ size: this.size });
-		this.layer = this.app.createLayer({ invoke: true, intersection: 'full' });
-		this.shape = this.layer.ctx.rectangle;
+		this.circles = [];
+		this.size    = new Size(this.appWidth, this.appHeight);
+		this.app     = new App({ size: this.size });
+		this.layer   = this.app.createLayer({ invoke: true, intersection: 'full' });
+		this.shape   = this.layer.ctx.rectangle;
 			
-		mouse = new Mouse(this.app.container.bounds);
+		var mouse = new Mouse(this.app.container.bounds);
 
 		mouse.events.add( 'click', function() {
 			new Circles.Circle( this.layer, {
@@ -22,8 +21,7 @@ atom.declare( 'Circles.Controller', {
 				state: "grow"
 			});
 		}.bind(this));
-		
-		this.circles = new Array();
+
 		for (var i = 0; i < this.maxCircles; i++)
 		{ 
 			this.circles[i] = new Circles.Circle( this.layer, {
@@ -89,10 +87,12 @@ atom.declare( 'Circles.Controller', {
 	
 	checkCollision: function(expanded)
 	{
-		for (var i = 0; i < this.circles.length; i++)
+		// we must use here reverse cycle:
+		// otherwise each element after erased will not be check
+		for (var i = this.circles.length; i--;)
 		{
 			var c = this.circles[i];
-			if (c.shape.intersect(expanded.shape))
+			if (c != expanded && c.shape.intersect(expanded.shape))
 			{
 				c.state = "grow";
 				this.circles.splice(i,1);

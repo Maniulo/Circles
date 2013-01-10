@@ -4,46 +4,32 @@ atom.declare( 'Circles.Controller', {
 	appHeight:  500,
 	
 	initialize: function () {
-		this.size  = new Size(this.appWidth, this.appHeight);
-		this.app   = new App({ size: this.size });
-		
-		this.bgLayer = this.app.createLayer({ invoke: true, intersection: 'auto', zIndex: 0 });
-		this.circlesLayer = this.app.createLayer({ invoke: true, intersection: 'all', zIndex: 1});
+		this.circles = [];
+		this.size    = new Size(this.appWidth, this.appHeight);
+		this.app     = new App({ size: this.size });
+		this.layer   = this.app.createLayer({ invoke: true, intersection: 'full' });
+		this.shape   = this.layer.ctx.rectangle;
 			
-		mouse 	     = new Mouse(this.app.container.bounds);
-		mouseHandler = new App.MouseHandler({ app: this.app, mouse: mouse });
-		
-		this.field = new Circles.Field( this.bgLayer, {
+		var mouse = new Mouse(this.app.container.bounds);
+
+		mouse.events.add( 'click', function() {
+			new Circles.Circle( this.layer, {
 				controller: this,
-				size: this.size,
-				hidden: true
-		});
-		
-		mouseHandler.subscribe( this.field );
-		
-		this.field.events.add( 'click', function(e)
-		{
-			console.log(e);
-			c = new Circles.Circle( this.layer, {
-				controller: this.controller,
-				fieldSize: this.controller.size,
+				fieldSize: this.size,
 				colour: "#FF7100",
-				x: e.clientX,
-				y: e.clientY,
+				point: mouse.point.clone(),
 				state: "grow"
 			});
-		});
-		
-		this.circles = new Array();
+		}.bind(this));
+
 		for (var i = 0; i < this.maxCircles; i++)
 		{ 
-			this.circles[i] = new Circles.Circle( this.circlesLayer, {
-							controller: this,
-							fieldSize: this.size,
-							state: "move"
-						});
-						
-			this.circles[i].zIndex = i;
+			this.circles[i] = new Circles.Circle( this.layer, {
+				controller: this,
+				fieldSize: this.size,
+				state: "move",
+				zIndex: i
+			});
 		}
 		
 		this.fpsMeter();
@@ -69,10 +55,13 @@ atom.declare( 'Circles.Controller', {
 			var parts=document.location.search.substr(1).split("&");
 			
 			var flashVars = {}, curr;
-			for (i = 0; i < parts.length; i++) {
+			for (var i = 0; i < parts.length; i++) {
 				curr = parts[i].split('=');
 				flashVars[curr[0]] = curr[1];
 			}
+
+			// try to use this here:
+			// var viewer_id = atom.uri().queryKey.viewer_id;
 		   
 			var viewer_id = flashVars['viewer_id'];
 			console.log(viewer_id);
@@ -98,10 +87,12 @@ atom.declare( 'Circles.Controller', {
 	
 	checkCollision: function(expanded)
 	{
-		for (var i = 0; i < this.circles.length; i++)
+		// we must use here reverse cycle:
+		// otherwise each element after erased will not be check
+		for (var i = this.circles.length; i--;)
 		{
-			c = this.circles[i];
-			if (c.shape.intersect(expanded.shape))
+			var c = this.circles[i];
+			if (c != expanded && c.shape.intersect(expanded.shape))
 			{
 				c.state = "grow";
 				this.circles.splice(i,1);

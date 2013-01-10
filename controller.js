@@ -1,10 +1,9 @@
 atom.declare( 'Circles.Controller', {
-	maxCircles: 120,
+	density:    2000,
 	appWidth:   607,
 	appHeight:  500,
 	
-	levels: [[1, 5], [2, 10], [4, 15], [6, 20], [10, 25], [15, 30], [18, 35], [22, 40], [30, 45], [37, 50], [48, 55], [55, 60]],
-	currentLevel: 0,
+	currentLevel: 10,
 	playerClicked: 0,
 	expanded: 0,
 	
@@ -31,10 +30,37 @@ atom.declare( 'Circles.Controller', {
 		}
 		
 		this.circles = [];
-		this.addCircles(this.levels[level][1]);
+		this.addCircles(this.getCirclesForLevel(level), this.getCircleRadius(level));
+		console.log(level + ": " + this.getCirclesForLevel(level) + " / " + this.getExpandedForLevel(level));
 	},
 	
-	addCircles: function(amount)
+	getCirclesForLevel: function(level)
+	{
+		return 5 + level * 5;
+		if (level == 0)
+		{
+			return 5;
+		}
+		else if (level < 5)
+		{
+			return 5 + 3 * level;
+		}
+		else if (level < 15)
+		{
+			return 13 + 2 * level;
+		}
+		else
+		{
+			return 41 + level;
+		}
+	},
+	
+	getExpandedForLevel: function(level)
+	{
+		return Math.floor(this.getCirclesForLevel(level) * 0.3);
+	},
+	
+	addCircles: function(amount, r)
 	{
 		for (var i = 0; i < amount; i++)
 		{ 
@@ -42,9 +68,15 @@ atom.declare( 'Circles.Controller', {
 				controller: this,
 				fieldSize: this.size,
 				state: "move",
+				radius: r,
 				zIndex: i
 			});
 		}
+	},
+	
+	getCircleRadius: function(level)
+	{
+		return this.appWidth * this.appHeight / this.getCirclesForLevel(level) / this.density;
 	},
 	
 	addMouseEvents: function()
@@ -62,6 +94,7 @@ atom.declare( 'Circles.Controller', {
 					fieldSize: this.size,
 					colour: "#FF7100",
 					point: mouse.point.clone(),
+					radius: this.getCircleRadius(this.currentLevel),
 					state: "grow"
 				});
 			}
@@ -117,11 +150,10 @@ atom.declare( 'Circles.Controller', {
 	{
 		--this.expanded;
 		c.destroy();
-		console.log(this.expanded);
 		
 		if (this.expanded == 0)
 		{
-			if (this.circles.length <= this.levels[this.currentLevel][1] - this.levels[this.currentLevel][0])
+			if (this.circles.length <= this.getCirclesForLevel(this.currentLevel) - this.getExpandedForLevel(this.currentLevel))
 			{
 				// new level (else replay)
 				++this.currentLevel;

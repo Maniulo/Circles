@@ -1,10 +1,9 @@
 atom.declare('Circles.Circle', App.Element,
 {
 	radius:       2,
-	speed:        0.06,
+	speed:        0.1,
 	growSpeed:    0.1,
 	growMax:      50,
-	growMax2:     30,
 	grownTime:    0,
 	grownTimeMax: 2000,
 	dwindleSpeed: 0.1,
@@ -28,7 +27,14 @@ atom.declare('Circles.Circle', App.Element,
 		this.controller = this.settings.get('controller');
 		this.colour     = this.settings.get('colour') || atom.Color.random().toString();
 		this.impulse    = this.getRandomImpulse();
-
+		this.radius     = this.settings.get('radius') || this.radius, 1;
+		this.growMax    = this.radius * 8;
+		
+		this.radius     = Math.max(this.radius, 1);
+		console.log(this.growMax);
+		this.growMax    = Math.min(this.growMax, 70);
+		console.log(this.growMax);
+		
 		this.shape = new Circle(
 			this.makeCenterPoint(),
 			this.radius
@@ -57,7 +63,7 @@ atom.declare('Circles.Circle', App.Element,
 
 	makeCenterPoint: function ()
 	{
-		return this.settings.get('point') || this.fieldShape.getRandomPoint(10);
+		return this.settings.get('point') || this.fieldShape.getRandomPoint(this.radius);
 	},
 
 	// Update

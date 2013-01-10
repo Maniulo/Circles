@@ -1,5 +1,5 @@
 atom.declare( 'Circles.Controller', {
-	maxCircles: 100,
+	maxCircles: 120,
 	appWidth:   607,
 	appHeight:  500,
 	

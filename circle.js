@@ -1,12 +1,13 @@
 atom.declare('Circles.Circle', App.Element,
 {
-	radius:       5,
-	speed:        0.1,
-	growSpeed:    0.03,
+	radius:       2,
+	speed:        0.06,
+	growSpeed:    0.1,
 	growMax:      50,
+	growMax2:     30,
 	grownTime:    0,
-	grownTimeMax: 5000,
-	dwindleSpeed: 0.02,
+	grownTimeMax: 2000,
+	dwindleSpeed: 0.1,
 	colour:       "#000000",
 	state:        "move",
 	buffer:       null,
@@ -93,6 +94,7 @@ atom.declare('Circles.Circle', App.Element,
 
 		if (this.grownTime > this.grownTimeMax)
 		{
+			this.shape.radius = this.growMax;
 			this.state = "dwindle";
 		}
 		this.checkCollision();

@@ -3,7 +3,13 @@ atom.declare( 'Circles.Controller', {
 	appWidth:   607,
 	appHeight:  500,
 	
-	initialize: function () {
+	levels: [[1, 5], [2, 10], [4, 15], [6, 20], [10, 25], [15, 30], [18, 35], [22, 40], [30, 45], [37, 50], [48, 55], [55, 60]],
+	currentLevel: 0,
+	playerClicked: 0,
+	expanded: 0,
+	
+	initialize: function ()
+	{
 		this.circles = [];
 		this.size    = new Size(this.appWidth, this.appHeight);
 		this.app     = new App({ size: this.size });
@@ -11,10 +17,21 @@ atom.declare( 'Circles.Controller', {
 		this.shape   = this.layer.ctx.rectangle;
 			
 		this.addMouseEvents();
-		this.addCircles(this.maxCircles);
+		this.playLevel(this.currentLevel);
 		
 		this.fpsMeter();
 		//vk();
+	},
+	
+	playLevel: function(level)
+	{
+		for (var i = this.circles.length - 1; i >= 0; --i)
+		{
+			this.circles[i].destroy();
+		}
+		
+		this.circles = [];
+		this.addCircles(this.levels[level][1]);
 	},
 	
 	addCircles: function(amount)
@@ -34,14 +51,20 @@ atom.declare( 'Circles.Controller', {
 	{
 		var mouse = new Mouse(this.app.container.bounds);
 
-		mouse.events.add( 'click', function() {
-			new Circles.Circle( this.layer, {
-				controller: this,
-				fieldSize: this.size,
-				colour: "#FF7100",
-				point: mouse.point.clone(),
-				state: "grow"
-			});
+		mouse.events.add( 'click', function()
+		{
+			if (this.playerClicked < 1)
+			{
+				++this.playerClicked;
+				++this.expanded;
+				new Circles.Circle( this.layer, {
+					controller: this,
+					fieldSize: this.size,
+					colour: "#FF7100",
+					point: mouse.point.clone(),
+					state: "grow"
+				});
+			}
 		}.bind(this));
 	},
 	
@@ -92,18 +115,33 @@ atom.declare( 'Circles.Controller', {
 	
 	removeCircle: function(c)
 	{
+		--this.expanded;
 		c.destroy();
+		console.log(this.expanded);
+		
+		if (this.expanded == 0)
+		{
+			if (this.circles.length <= this.levels[this.currentLevel][1] - this.levels[this.currentLevel][0])
+			{
+				// new level (else replay)
+				++this.currentLevel;
+			}
+			
+			this.playerClicked = 0;
+			this.playLevel(this.currentLevel);
+		}
 	},
 	
-	checkCollision: function(expanded)
+	checkCollision: function(expandedCircle)
 	{
 		for (var i = this.circles.length - 1; i >= 0; --i)
 		{
 			var c = this.circles[i];
-			if (c != expanded && c.shape.intersect(expanded.shape))
+			if (c != expandedCircle && c.shape.intersect(expandedCircle.shape))
 			{
 				c.state = "grow";
 				this.circles.splice(i,1);
+				++this.expanded;
 			}
 		}
 	}

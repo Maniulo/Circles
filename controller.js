@@ -15,7 +15,13 @@ atom.declare( 'Circles.Controller', {
 		this.layer   = this.app.createLayer({ invoke: true, intersection: 'full' });
 		this.shape   = this.layer.ctx.rectangle;
 			
-		this.addMouseEvents();
+		this.field = new Circles.Field( this.layer, {
+			controller: this,
+			size: this.size,
+			zIndex: 0
+		});
+		
+		this.addMouseEvents(this.field);
 		this.playLevel(this.currentLevel);
 		
 		this.fpsMeter();
@@ -79,26 +85,32 @@ atom.declare( 'Circles.Controller', {
 		return this.appWidth * this.appHeight / this.getCirclesForLevel(level) / this.density;
 	},
 	
-	addMouseEvents: function()
+	addMouseEvents: function(field)
 	{
 		var mouse = new Mouse(this.app.container.bounds);
 
 		mouse.events.add( 'click', function()
 		{
-			if (this.playerClicked < 1)
-			{
-				++this.playerClicked;
-				++this.expanded;
-				new Circles.Circle( this.layer, {
-					controller: this,
-					fieldSize: this.size,
-					colour: "#FF7100",
-					point: mouse.point.clone(),
-					radius: this.getCircleRadius(this.currentLevel),
-					state: "grow"
-				});
-			}
-		}.bind(this));
+			this.controller.playerClick(mouse.point.clone());			
+		}.bind(field));
+	},
+	
+	playerClick: function(mousePoint)
+	{
+		if (this.playerClicked < 1)
+		{
+			++this.playerClicked;
+			++this.expanded;
+			new Circles.Circle( this.layer, {
+				controller: this,
+				fieldSize: this.size,
+				colour: "#FF7100",
+				point: mousePoint,
+				radius: this.getCircleRadius(this.currentLevel),
+				state: "grow",
+				zIndex: this.getCirclesForLevel(this.currentLevel) + 1
+			});
+		}
 	},
 	
 	fpsMeter: function ()

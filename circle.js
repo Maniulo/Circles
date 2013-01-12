@@ -8,6 +8,7 @@ atom.declare('Circles.Circle', App.Element,
 	grownTimeMax: 2000,
 	dwindleSpeed: 0.1,
 	colour:       "#000000",
+	shadowColour: "#DEE5EB",
 	state:        "move",
 	buffer:       null,
 	
@@ -31,9 +32,7 @@ atom.declare('Circles.Circle', App.Element,
 		this.growMax    = this.radius * 8;
 		
 		this.radius     = Math.max(this.radius, 1);
-		console.log(this.growMax);
 		this.growMax    = Math.min(this.growMax, 70);
-		console.log(this.growMax);
 		
 		this.shape = new Circle(
 			this.makeCenterPoint(),
@@ -41,7 +40,7 @@ atom.declare('Circles.Circle', App.Element,
 		);
 		
 		this.state = this.settings.get('state');
-
+				
 		this.updateCache();
 	},
 
@@ -101,6 +100,7 @@ atom.declare('Circles.Circle', App.Element,
 		if (this.grownTime > this.grownTimeMax)
 		{
 			this.shape.radius = this.growMax;
+			this.createShadow();
 			this.state = "dwindle";
 		}
 		this.checkCollision();
@@ -154,7 +154,8 @@ atom.declare('Circles.Circle', App.Element,
 	},
 
 	// View
-	updateCache: function () {
+	updateCache: function ()
+	{
 		var
 			cache = this.cache,
 			r = this.shape.radius,
@@ -173,12 +174,26 @@ atom.declare('Circles.Circle', App.Element,
 		// cache.ctx.stroke(shape, 'black');
 	},
 
-	renderTo: function (ctx, resources)
+	createShadow: function()
 	{
+		/*var s = Math.ceil(this.shape.radius * 2)
+		console.log(s);
+		this.shadow = LibCanvas.buffer(s, s, true);
+		this.shadow.ctx.fill(this.shape, "#000000");
+		this.shadow.ctx.stroke(this.shape, 'black');*/
+		
+		this.controller.field.addShadow(this);
+
+		// To check, what circles are drawn from cache - uncomment this line:
+		// cache.ctx.stroke(shape, 'black');
+	},
+	
+	renderTo: function (ctx, resources)
+	{		
 		if (this.state == 'move' || this.state == 'calm') {
 			ctx.drawImage({
-				image   : this.cache,
-				center  : this.shape.center,
+				image:    this.cache,
+				center:   this.shape.center,
 				optimize: true
 			});
 		} else {

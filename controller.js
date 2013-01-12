@@ -12,10 +12,11 @@ atom.declare( 'Circles.Controller', {
 		this.circles = [];
 		this.size    = new Size(this.appWidth, this.appHeight);
 		this.app     = new App({ size: this.size });
+		this.fieldLayer = this.app.createLayer({ invoke: true, intersection: 'auto' });
 		this.layer   = this.app.createLayer({ invoke: true, intersection: 'full' });
 		this.shape   = this.layer.ctx.rectangle;
 			
-		this.field = new Circles.Field( this.layer, {
+		this.field = new Circles.Field( this.fieldLayer, {
 			controller: this,
 			size: this.size,
 			zIndex: 0
@@ -34,10 +35,16 @@ atom.declare( 'Circles.Controller', {
 		{
 			this.circles[i].destroy();
 		}
+		this.field.destroy();
+		this.field = new Circles.Field( this.fieldLayer, {
+			controller: this,
+			size: this.size,
+			zIndex: 0
+		});
 		
 		this.circles = [];
 		this.addCircles(this.getCirclesForLevel(level), this.getCircleRadius(level));
-		console.log(level + ": " + this.getCirclesForLevel(level) + " / " + this.getExpandedForLevel(level));
+		//console.log(level + ": " + this.getCirclesForLevel(level) + " / " + this.getExpandedForLevel(level));
 	},
 	
 	getCirclesForLevel: function(level)

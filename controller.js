@@ -3,20 +3,27 @@ atom.declare( 'Circles.Controller', {
 	appWidth:   607,
 	appHeight:  500,
 	
-	currentLevel: 0,
+	currentLevel: 10,
 	playerClicked: 0,
 	expanded: 0,
+	expandedNow: 0,
 	
 	initialize: function ()
 	{
 		this.circles = [];
 		this.size    = new Size(this.appWidth, this.appHeight);
 		this.app     = new App({ size: this.size });
-		this.fieldLayer = this.app.createLayer({ invoke: true, intersection: 'auto' });
-		this.layer   = this.app.createLayer({ invoke: true, intersection: 'full' });
+		this.fieldLayer = this.app.createLayer({ invoke: true, intersection: 'manual' });
+		this.scoreLayer = this.app.createLayer({ invoke: true, intersection: 'manual' });
+		this.layer      = this.app.createLayer({ invoke: true, intersection: 'full' });
 		this.shape   = this.layer.ctx.rectangle;
 			
 		this.resetField();
+		this.interface = new Circles.Interface(this.scoreLayer, {
+			controller: this,
+			size: this.size,
+			zIndex: 1
+		});
 		
 		this.addMouseEvents(this.field);
 		this.playLevel(this.currentLevel);
@@ -51,9 +58,12 @@ atom.declare( 'Circles.Controller', {
 		}
 		this.resetField();
 		
+		this.playerClicked = 0;
+		this.expanded = 0;
 		this.circles = [];
 		this.addCircles(this.getCirclesForLevel(level), this.getCircleRadius(level));
-		//console.log(level + ": " + this.getCirclesForLevel(level) + " / " + this.getExpandedForLevel(level));
+		
+		this.interface.updateScore(0, this.getExpandedForLevel(level));
 	},
 	
 	getCirclesForLevel: function(level)
@@ -116,7 +126,7 @@ atom.declare( 'Circles.Controller', {
 		if (this.playerClicked < 1)
 		{
 			++this.playerClicked;
-			++this.expanded;
+			++this.expandedNow;
 			new Circles.Circle( this.layer, {
 				controller: this,
 				fieldSize: this.size,
@@ -176,18 +186,17 @@ atom.declare( 'Circles.Controller', {
 	
 	removeCircle: function(c)
 	{
-		--this.expanded;
+		--this.expandedNow;
 		c.destroy();
 		
-		if (this.expanded == 0)
+		if (this.expandedNow == 0)
 		{
-			if (this.circles.length <= this.getCirclesForLevel(this.currentLevel) - this.getExpandedForLevel(this.currentLevel))
+			if (this.expanded >= this.getExpandedForLevel(this.currentLevel))
 			{
 				// new level (else replay)
 				++this.currentLevel;
 			}
 			
-			this.playerClicked = 0;
 			this.playLevel(this.currentLevel);
 		}
 	},
@@ -201,7 +210,9 @@ atom.declare( 'Circles.Controller', {
 			{
 				c.state = "grow";
 				this.circles.splice(i,1);
+				++this.expandedNow;
 				++this.expanded;
+				this.interface.updateScore(this.expanded, this.getExpandedForLevel(this.currentLevel));
 			}
 		}
 	}

@@ -16,11 +16,7 @@ atom.declare( 'Circles.Controller', {
 		this.layer   = this.app.createLayer({ invoke: true, intersection: 'full' });
 		this.shape   = this.layer.ctx.rectangle;
 			
-		this.field = new Circles.Field( this.fieldLayer, {
-			controller: this,
-			size: this.size,
-			zIndex: 0
-		});
+		this.resetField();
 		
 		this.addMouseEvents(this.field);
 		this.playLevel(this.currentLevel);
@@ -29,18 +25,25 @@ atom.declare( 'Circles.Controller', {
 		//vk();
 	},
 	
+	resetField: function()
+	{
+		if (this.field)
+			this.field.destroy();
+		
+		this.field = new Circles.Field( this.fieldLayer, {
+			controller: this,
+			size: this.size,
+			zIndex: 0
+		});
+	},
+	
 	playLevel: function(level)
 	{
 		for (var i = this.circles.length - 1; i >= 0; --i)
 		{
 			this.circles[i].destroy();
 		}
-		this.field.destroy();
-		this.field = new Circles.Field( this.fieldLayer, {
-			controller: this,
-			size: this.size,
-			zIndex: 0
-		});
+		this.resetField();
 		
 		this.circles = [];
 		this.addCircles(this.getCirclesForLevel(level), this.getCircleRadius(level));

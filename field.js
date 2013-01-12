@@ -2,7 +2,6 @@ atom.declare('Circles.Field', App.Element,
 {
 	buffer: null,
 	colour: "#FFFFFF",
-	shadowColour: "#DEE5EB",
 	
 	configure: function()
 	{
@@ -18,21 +17,12 @@ atom.declare('Circles.Field', App.Element,
 	
 	addShadow: function (c)
 	{
-		var
-			shadow = this.shadow,
-			r = c.shape.radius,
-			s = Math.ceil(r * 2),
-			shape = new Circle(s/2, s/2, r);
-		
-		
-		this.buffer.ctx.fill(c.shape, this.shadowColour);
+		this.buffer.ctx.fill(c.shape, c.shadowColour);
 		this.redraw();
 	},
 	
 	renderTo: function (ctx, resources)
 	{
-		
-		
 		ctx.drawImage({
 			image:    this.buffer,
 			from:     new Point(0,0),

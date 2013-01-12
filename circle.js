@@ -8,7 +8,7 @@ atom.declare('Circles.Circle', App.Element,
 	grownTimeMax: 2000,
 	dwindleSpeed: 0.1,
 	colour:       "#000000",
-	shadowColour: "#DEE5EB",
+	shadowColour: "#FFFFFF",
 	state:        "move",
 	buffer:       null,
 	

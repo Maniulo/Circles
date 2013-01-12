@@ -3,7 +3,7 @@ atom.declare( 'Circles.Controller', {
 	appWidth:   607,
 	appHeight:  500,
 	
-	currentLevel: 10,
+	currentLevel: 0,
 	playerClicked: 0,
 	expanded: 0,
 	
@@ -23,6 +23,12 @@ atom.declare( 'Circles.Controller', {
 		
 		this.fpsMeter();
 		//vk();
+	},
+	
+	playerColour: function()
+	{
+		// "#FF7100"
+		return atom.Color.random().toString();
 	},
 	
 	resetField: function()
@@ -114,7 +120,7 @@ atom.declare( 'Circles.Controller', {
 			new Circles.Circle( this.layer, {
 				controller: this,
 				fieldSize: this.size,
-				colour: "#FF7100",
+				colour: this.playerColour(),
 				point: mousePoint,
 				radius: this.getCircleRadius(this.currentLevel),
 				state: "grow",

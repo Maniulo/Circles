@@ -3,7 +3,7 @@ atom.declare( 'Circles.Controller', {
 	appWidth:   607,
 	appHeight:  500,
 	
-	currentLevel: 1,
+	currentLevel: 11,
 	playerClicked: 0,
 	expanded: 0,
 	expandedNow: 0,
@@ -29,7 +29,27 @@ atom.declare( 'Circles.Controller', {
 		this.playLevel(this.currentLevel);
 		
 		this.fpsMeter();
+		
+		this.bindMethods('control');
+		this.q = "!";
+		atom.frame.add( this.control );
 		//vk();
+	},
+	
+	control: function()
+	{
+		if (this.expandedNow == 0 && this.playerClicked != 0)
+		{
+			if (this.hasWon())	// new level (else replay)
+				++this.currentLevel;
+			
+			this.endLevel();
+		}
+		
+		if (this.circles.length == 0)
+		{
+			this.playLevel(this.currentLevel);
+		}
 	},
 	
 	playerColour: function()
@@ -50,12 +70,16 @@ atom.declare( 'Circles.Controller', {
 		});
 	},
 	
-	playLevel: function(level)
+	endLevel: function()
 	{
 		for (var i = this.circles.length - 1; i >= 0; --i)
 		{
-			this.circles[i].destroy();
+			this.circles[i].state = "disappear";
 		}
+	},
+	
+	playLevel: function(level)
+	{
 		this.resetField();
 		
 		this.playerClicked = 0;
@@ -115,7 +139,7 @@ atom.declare( 'Circles.Controller', {
 			this.circles[i] = new Circles.Circle( this.layer, {
 				controller: this,
 				fieldSize: this.size,
-				state: "move",
+				state: "appear",
 				radius: r,
 				zIndex: i
 			});
@@ -143,6 +167,7 @@ atom.declare( 'Circles.Controller', {
 		{
 			++this.playerClicked;
 			++this.expandedNow;
+			
 			new Circles.Circle( this.layer, {
 				controller: this,
 				fieldSize: this.size,
@@ -207,16 +232,19 @@ atom.declare( 'Circles.Controller', {
 	
 	removeCircle: function(c)
 	{
+		for (var i = this.circles.length - 1; i >= 0; --i)
+			if (c == this.circles[i])
+			{
+				c.destroy();
+				this.circles.splice(i,1);
+				break;
+			}
+	},
+	
+	removeExpandedCircle: function(c)
+	{
 		--this.expandedNow;
 		c.destroy();
-		
-		if (this.expandedNow == 0)
-		{
-			if (this.hasWon())	// new level (else replay)
-				++this.currentLevel;
-			
-			this.playLevel(this.currentLevel);
-		}
 	},
 	
 	checkCollision: function(expandedCircle)

@@ -3,6 +3,7 @@ atom.declare('Circles.Circle', App.Element,
 	radius:       2,
 	speed:        0.1,
 	growSpeed:    0.1,
+	appearSpeed:  0,
 	growMax:      50,
 	grownTime:    0,
 	grownTimeMax: 2000,
@@ -34,13 +35,14 @@ atom.declare('Circles.Circle', App.Element,
 		this.radius     = Math.max(this.radius, 1);
 		this.growMax    = Math.min(this.growMax, 50);
 		
+		this.appearSpeed = this.radius / 150;
+		
 		this.shape = new Circle(
 			this.makeCenterPoint(),
-			this.radius
+			0.01
 		);
 		
-		this.state = this.settings.get('state');
-				
+		this.state = this.settings.get('state');				
 		this.updateCache();
 	},
 
@@ -71,7 +73,33 @@ atom.declare('Circles.Circle', App.Element,
 		this.redraw();
 		this[this.state + 'State'](t);
     },
+	
+	appearState: function(t)
+	{
+		if (this.shape.radius >= this.radius)
+		{
+			this.shape.radius = this.radius;			
+			this.updateCache();
+			this.state = "move";
+		}
+		else
+		{
+			this.shape.radius += this.appearSpeed * t;
+		}
+	},
 
+	disappearState: function(t)
+	{
+		this.shape.radius -= this.appearSpeed * t;
+		
+		if (this.shape.radius <= 0)
+		{
+			this.shape.radius = 0;			
+			this.updateCache();
+			this.controller.removeCircle(this);
+		}
+	},
+	
 	moveState: function (t)
 	{
 		this.shape.center.move(this.move(t));
@@ -109,21 +137,14 @@ atom.declare('Circles.Circle', App.Element,
 	dwindleState: function (t)
 	{
 		this.shape.radius -= this.dwindleSpeed * t;
-		if (this.shape.radius > 0)
-		{
-			this.redraw();
-		}
-		else
+		if (this.shape.radius <= 0)
 		{
 			this.shape.radius = 0;
-			this.state = "destroy";
+			this.controller.removeExpandedCircle(this);
 		}
 		this.checkCollision();
 	},
 
-	destroyState: function (t) {
-		this.controller.removeCircle(this);
-	},
 
 	// Collisions
 	checkCollision: function ()

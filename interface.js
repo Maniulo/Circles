@@ -1,6 +1,6 @@
 atom.declare('Circles.Interface', App.Element,
 {
-	text: "Click anywhere to cause",
+	//text: "Click anywhere to cause",
 	success: false,
 	
 	configure: function()

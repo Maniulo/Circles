@@ -29,7 +29,7 @@ atom.declare('Circles.Circle', App.Element,
 		this.colour     = this.settings.get('colour') || atom.Color.random().toString();
 		this.impulse    = this.getRandomImpulse();
 		this.radius     = this.settings.get('radius') || this.radius, 1;
-		this.growMax    = this.radius * 8;
+		this.growMax    = this.radius * 6;
 		
 		this.radius     = Math.max(this.radius, 1);
 		this.growMax    = Math.min(this.growMax, 50);

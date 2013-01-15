@@ -63,7 +63,7 @@ atom.declare( 'Circles.Controller', {
 		this.circles = [];
 		this.addCircles(this.getCirclesForLevel(level), this.getCircleRadius(level));
 		
-		this.interface.updateScore(0, this.getCirclesForLevel(level));
+		this.interface.updateScore(0, this.getCirclesForLevel(level), false);
 	},
 	
 	getCirclesForLevel: function(level)
@@ -89,7 +89,23 @@ atom.declare( 'Circles.Controller', {
 	
 	getExpandedForLevel: function(level)
 	{
-		return Math.floor(this.getCirclesForLevel(level) * 0.4);
+		if (level == 1)
+		{
+			return 1;
+		}
+		else if (level < 5)
+		{
+			return Math.floor(this.getCirclesForLevel(level) * 0.3);
+		}
+		else if (level < 15)
+		{
+			return Math.floor(this.getCirclesForLevel(level) * 0.6);
+		}
+		else
+		{
+			return Math.floor(this.getCirclesForLevel(level) * 0.8);
+		}
+		
 	},
 	
 	addCircles: function(amount, r)
@@ -184,6 +200,11 @@ atom.declare( 'Circles.Controller', {
 		});
 	},
 	
+	hasWon: function()
+	{
+		return this.expanded >= this.getExpandedForLevel(this.currentLevel);
+	},
+	
 	removeCircle: function(c)
 	{
 		--this.expandedNow;
@@ -191,11 +212,8 @@ atom.declare( 'Circles.Controller', {
 		
 		if (this.expandedNow == 0)
 		{
-			if (this.expanded >= this.getExpandedForLevel(this.currentLevel))
-			{
-				// new level (else replay)
+			if (this.hasWon())	// new level (else replay)
 				++this.currentLevel;
-			}
 			
 			this.playLevel(this.currentLevel);
 		}
@@ -212,7 +230,7 @@ atom.declare( 'Circles.Controller', {
 				this.circles.splice(i,1);
 				++this.expandedNow;
 				++this.expanded;
-				this.interface.updateScore(this.expanded, this.getCirclesForLevel(this.currentLevel));
+				this.interface.updateScore(this.expanded, this.getCirclesForLevel(this.currentLevel), this.hasWon());
 			}
 		}
 	}

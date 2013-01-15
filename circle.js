@@ -32,7 +32,7 @@ atom.declare('Circles.Circle', App.Element,
 		this.growMax    = this.radius * 8;
 		
 		this.radius     = Math.max(this.radius, 1);
-		this.growMax    = Math.min(this.growMax, 70);
+		this.growMax    = Math.min(this.growMax, 50);
 		
 		this.shape = new Circle(
 			this.makeCenterPoint(),

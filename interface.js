@@ -1,6 +1,6 @@
 atom.declare('Circles.Interface', App.Element,
 {
-	text: "",
+	text: "Click anywhere to cause",
 	
 	configure: function()
 	{
@@ -17,11 +17,23 @@ atom.declare('Circles.Interface', App.Element,
 		this.redraw();
 	},
 	
+	addHint: function()
+	{
+	},
+	
 	renderTo: function (ctx, resources)
 	{
-		ctx.font = "40px Verdana";
+		
+		ctx.font = "130px Century Gothic";
 		var metrics = ctx.measureText(this.text);
 		
-		ctx.fillText(this.text, (this.shape.width ) / 2, this.shape.height / 2 + 20);
+		ctx.fillStyle = "rgba(255,255,255,0.35)";
+		ctx.fillText(this.text, this.shape.width/2 - metrics.width/8 - 2, this.shape.height / 2 + 60 - 2);
+		
+		ctx.fillStyle = "rgba(65,120,175,0.35)";
+		ctx.fillText(this.text, this.shape.width/2 - metrics.width/8, this.shape.height / 2 + 60);
+		//console.log(metrics);
+		
+		
     }
 });

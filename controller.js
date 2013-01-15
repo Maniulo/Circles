@@ -3,7 +3,7 @@ atom.declare( 'Circles.Controller', {
 	appWidth:   607,
 	appHeight:  500,
 	
-	currentLevel: 10,
+	currentLevel: 1,
 	playerClicked: 0,
 	expanded: 0,
 	expandedNow: 0,
@@ -13,9 +13,9 @@ atom.declare( 'Circles.Controller', {
 		this.circles = [];
 		this.size    = new Size(this.appWidth, this.appHeight);
 		this.app     = new App({ size: this.size });
-		this.fieldLayer = this.app.createLayer({ invoke: true, intersection: 'manual' });
-		this.scoreLayer = this.app.createLayer({ invoke: true, intersection: 'manual' });
-		this.layer      = this.app.createLayer({ invoke: true, intersection: 'full' });
+		this.fieldLayer = this.app.createLayer({ invoke: true, intersection: 'manual', zIndex: 0 });
+		this.scoreLayer = this.app.createLayer({ invoke: true, intersection: 'manual', zIndex: 2 });
+		this.layer      = this.app.createLayer({ invoke: true, intersection: 'full', zIndex: 1 });
 		this.shape   = this.layer.ctx.rectangle;
 			
 		this.resetField();
@@ -63,13 +63,13 @@ atom.declare( 'Circles.Controller', {
 		this.circles = [];
 		this.addCircles(this.getCirclesForLevel(level), this.getCircleRadius(level));
 		
-		this.interface.updateScore(0, this.getExpandedForLevel(level));
+		this.interface.updateScore(0, this.getCirclesForLevel(level));
 	},
 	
 	getCirclesForLevel: function(level)
 	{
-		return 5 + level * 5;
-		if (level == 0)
+		//return 5 + level * 5;
+		if (level == 1)
 		{
 			return 5;
 		}
@@ -89,7 +89,7 @@ atom.declare( 'Circles.Controller', {
 	
 	getExpandedForLevel: function(level)
 	{
-		return Math.floor(this.getCirclesForLevel(level) * 0.3);
+		return Math.floor(this.getCirclesForLevel(level) * 0.4);
 	},
 	
 	addCircles: function(amount, r)
@@ -212,7 +212,7 @@ atom.declare( 'Circles.Controller', {
 				this.circles.splice(i,1);
 				++this.expandedNow;
 				++this.expanded;
-				this.interface.updateScore(this.expanded, this.getExpandedForLevel(this.currentLevel));
+				this.interface.updateScore(this.expanded, this.getCirclesForLevel(this.currentLevel));
 			}
 		}
 	}
